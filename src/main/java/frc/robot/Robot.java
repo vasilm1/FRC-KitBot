@@ -4,7 +4,20 @@
 
 package frc.robot;
 
+import edu.wpi.first.wpilibj.SPI;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+
+import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+
+import frc.robot.subsys.Drivetrain;
+import frc.robot.subsys.Drivetrain.DriveSpeed;
+
+
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -13,15 +26,24 @@ import edu.wpi.first.wpilibj.TimedRobot;
  * project.
  */
 public class Robot extends TimedRobot {
+
+private PS4Controller driver;
+private PS4Controller operator;
+
+private Drivetrain drivetrain;
+
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
    */
   @Override
-  public void robotInit() {}
+  public void robotInit() {
+    drivetrain = Drivetrain.getInstance();
+  }
 
   @Override
-  public void robotPeriodic() {}
+  public void robotPeriodic() {
+  }
 
   @Override
   public void autonomousInit() {}
@@ -30,10 +52,25 @@ public class Robot extends TimedRobot {
   public void autonomousPeriodic() {}
 
   @Override
-  public void teleopInit() {}
+  public void teleopInit() {
+    driver = new PS4Controller(0);
+    operator = new PS4Controller(1);
+  }
 
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+
+    if (driver.getRawButton(Controller.PS_L1)) {
+      drivetrain.setDriveSpeed(DriveSpeed.SLOW);
+  } else {
+      drivetrain.setDriveSpeed(DriveSpeed.FAST);
+  }
+
+  double forward = driver.getRawAxis(Controller.PS_AXIS_RIGHT_Y);
+  double turn = driver.getRawAxis(Controller.PS_AXIS_LEFT_X);
+
+  drivetrain.drive(forward, turn);
+  }
 
   @Override
   public void disabledInit() {}
