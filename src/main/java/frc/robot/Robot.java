@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import frc.robot.subsys.Drivetrain;
 import frc.robot.subsys.Drivetrain.DriveSpeed;
+import frc.robot.subsys.Launcher;
 
 
 
@@ -31,6 +32,7 @@ private PS4Controller driver;
 private PS4Controller operator;
 
 private Drivetrain drivetrain;
+private Launcher launcher;
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -39,6 +41,7 @@ private Drivetrain drivetrain;
   @Override
   public void robotInit() {
     drivetrain = Drivetrain.getInstance();
+    launcher = Launcher.getInstance();
   }
 
   @Override
@@ -60,6 +63,8 @@ private Drivetrain drivetrain;
   @Override
   public void teleopPeriodic() {
 
+    //drive controls
+
     if (driver.getRawButton(Controller.PS_L1)) {
       drivetrain.setDriveSpeed(DriveSpeed.SLOW);
   } else {
@@ -70,6 +75,13 @@ private Drivetrain drivetrain;
   double turn = driver.getRawAxis(Controller.PS_AXIS_LEFT_X);
 
   drivetrain.drive(forward, turn);
+
+  //launcher controls
+    
+  boolean launchButton = operator.getRawButton(Controller.PS_CROSS);
+
+  launcher.updateState(launchButton);
+
   }
 
   @Override
