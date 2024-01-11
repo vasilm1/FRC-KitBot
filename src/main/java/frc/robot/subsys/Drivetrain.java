@@ -1,92 +1,104 @@
-package frc.robot.subsys;
+// Copyright (c) FIRST and other WPILib contributors.
+// Open Source Software; you can modify and/or share it under the terms of
+// the WPILib BSD license file in the root directory of this project.
 
+package frc.robot;
+
+import edu.wpi.first.wpilibj.SPI;
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+
+import edu.wpi.first.wpilibj.PS4Controller;
+import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
-import frc.robot.Misc;
-import frc.robot.Ports;
+import frc.robot.subsys.Drivetrain;
+import frc.robot.subsys.Drivetrain.DriveSpeed;
+import frc.robot.subsys.Launcher;
 
 
 
-public class Drivetrain {
-    
-    private DriveSpeed DSpeed = DriveSpeed.FAST;
-    
-    private static CANSparkMax rightFront;
-    private static CANSparkMax rightBack;
-    private static CANSparkMax leftFront;
-    private static CANSparkMax leftBack;
+/**
+ * The VM is configured to automatically run this class, and to call the functions corresponding to
+ * each mode, as described in the TimedRobot documentation. If you change the name of this class or
+ * the package after creating this project, you must also update the build.gradle file in the
+ * project.
+ */
+public class Robot extends TimedRobot {
 
-    private static Drivetrain instance;
-    
-    public enum DriveSpeed {
-        SLOW(0.1),
-        FAST(0.25);
+private PS4Controller driver;
+private PS4Controller operator;
 
-        public final double speed;
+private Drivetrain drivetrain;
+private Launcher launcher;
 
-        private DriveSpeed(double speed) {
-            this.speed = speed;
-        }
-    }
+  /**
+   * This function is run when the robot is first started up and should be used for any
+   * initialization code.
+   */
+  @Override
+  public void robotInit() {
+    drivetrain = Drivetrain.getInstance();
+    launcher = Launcher.getInstance();
+  }
 
+  @Override
+  public void robotPeriodic() {
+  }
 
-    public Drivetrain(){
-    rightFront = new CANSparkMax(Ports.DRIVE_RIGHT_1, MotorType.kBrushed);
-    rightFront.setInverted(true);
-    rightFront.setOpenLoopRampRate(0.5);
-    rightFront.setClosedLoopRampRate(0.5);
-    rightFront.setIdleMode(IdleMode.kBrake);
-    rightFront.burnFlash();
+  @Override
+  public void autonomousInit() {}
 
-    rightBack = new CANSparkMax(Ports.DRIVE_RIGHT_2, MotorType.kBrushed);
-    rightBack.setInverted(true);
-    rightBack.setOpenLoopRampRate(0.5);
-    rightBack.setClosedLoopRampRate(0.5);
-    rightBack.setIdleMode(IdleMode.kBrake);
-    rightBack.burnFlash();
+  @Override
+  public void autonomousPeriodic() {}
 
-    leftFront = new CANSparkMax(Ports.DRIVE_LEFT_1, MotorType.kBrushed);
-    leftFront.setOpenLoopRampRate(0.5);
-    leftFront.setClosedLoopRampRate(0.5);
-    leftFront.setIdleMode(IdleMode.kBrake);
-    leftFront.burnFlash();
+  @Override
+  public void teleopInit() {
+    driver = new PS4Controller(0);
+    operator = new PS4Controller(1);
+  }
 
-    leftBack = new CANSparkMax(Ports.DRIVE_LEFT_2, MotorType.kBrushed);
-    leftBack.setOpenLoopRampRate(0.5);
-    leftBack.setClosedLoopRampRate(0.5);
-    leftBack.setIdleMode(IdleMode.kBrake);
-    leftBack.burnFlash();
-    }
+  @Override
+  public void teleopPeriodic() {
 
-    public void drive(double forward, double turn) {
-        double leftSpeed = Misc.clamp((forward * DSpeed.speed) - turn, -1, 1);
-        double rightSpeed = Misc.clamp((forward * DSpeed.speed) + turn, -1, 1);
+    //drive controls
 
-        SmartDashboard.putNumber("RIGHT SPEED", (int) (rightSpeed * 100));
-        SmartDashboard.putNumber("LEFT SPEED", (int) (leftSpeed * 100));
-        SmartDashboard.putNumber("LEFT 1 OUTPUT", leftFront.getOutputCurrent());
-        SmartDashboard.putNumber("LEFT 2 OUTPUT", leftBack.getOutputCurrent());
-        SmartDashboard.putNumber("RIGHT 1 OUTPUT", rightFront.getOutputCurrent());
-        SmartDashboard.putNumber("RIGHT 2 OUTPUT", rightBack.getOutputCurrent());
+    if (driver.getRawButton(Controller.PS_L1)) {
+      drivetrain.setDriveSpeed(DriveSpeed.SLOW);
+  } else {
+      drivetrain.setDriveSpeed(DriveSpeed.FAST);
+  }
 
-        leftFront.set(leftSpeed);
-        leftBack.set(leftSpeed);
+  double forward = driver.getRawAxis(Controller.PS_AXIS_RIGHT_Y);
+  double turn = driver.getRawAxis(Controller.PS_AXIS_LEFT_X);
 
-        rightFront.set(rightSpeed);
-        rightBack.set(rightSpeed);
-    }
+  drivetrain.drive(forward, turn);
 
-    public void setDriveSpeed(DriveSpeed driveSpeed) {
-        this.DSpeed = driveSpeed;
-    }
+  //launcher controls
+  boolean launchButton = operator.getRawButton(Controller.PS_CROSS);
+  boolean intakebutton = operator.getRawButton(Controller.PS_SQUARE);
 
-    public static Drivetrain getInstance() {
-        if (instance == null) {
-            instance = new Drivetrain();
-        }
-        return instance;
-    }
+  launcher.updateState(launchButton, intakebutton);
+
+  }
+
+  @Override
+  public void disabledInit() {}
+
+  @Override
+  public void disabledPeriodic() {}
+
+  @Override
+  public void testInit() {}
+
+  @Override
+  public void testPeriodic() {}
+
+  @Override
+  public void simulationInit() {}
+
+  @Override
+  public void simulationPeriodic() {}
 }
