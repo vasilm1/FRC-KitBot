@@ -4,9 +4,8 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.SPI;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+// import com.revrobotics.CANSparkMax;
+// import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -64,24 +63,25 @@ private Launcher launcher;
   public void teleopPeriodic() {
 
     //drive controls
-
+    
     if (driver.getRawButton(Controller.PS_L1)) {
       drivetrain.setDriveSpeed(DriveSpeed.SLOW);
-  } else {
+    } else {
       drivetrain.setDriveSpeed(DriveSpeed.FAST);
-  }
+    }
 
-  double forward = driver.getRawAxis(Controller.PS_AXIS_RIGHT_Y);
-  double turn = driver.getRawAxis(Controller.PS_AXIS_LEFT_X);
+    double forward = driver.getRawAxis(Controller.PS_AXIS_RIGHT_Y);
+    double turn = driver.getRawAxis(Controller.PS_AXIS_LEFT_X);
 
-  drivetrain.drive(forward, turn);
+    drivetrain.drive(forward, turn);
 
-  //launcher controls
-    
-  boolean launchButton = operator.getRawButton(Controller.PS_CROSS);
 
-  launcher.updateState(launchButton);
+    //launcher controls
 
+    boolean launchButton = operator.getRawButton(Controller.PS_CROSS);
+    boolean intakebutton = operator.getRawButton(Controller.PS_SQUARE);
+
+    launcher.updateState(launchButton, intakebutton);
   }
 
   @Override
