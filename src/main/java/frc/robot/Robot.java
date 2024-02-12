@@ -4,8 +4,9 @@
 
 package frc.robot;
 
-// import com.revrobotics.CANSparkMax;
-// import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import edu.wpi.first.wpilibj.SPI;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj.TimedRobot;
@@ -15,7 +16,10 @@ import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import frc.robot.subsys.Drivetrain;
 import frc.robot.subsys.Drivetrain.DriveSpeed;
+import frc.robot.subsys.Launcher.FlickerState;
+import frc.robot.subsys.Launcher.LauncherState;
 import frc.robot.subsys.Launcher;
+import frc.robot.subsys.Roof;
 
 
 
@@ -32,6 +36,7 @@ private PS4Controller operator;
 
 private Drivetrain drivetrain;
 private Launcher launcher;
+private Roof roof;
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -41,6 +46,7 @@ private Launcher launcher;
   public void robotInit() {
     drivetrain = Drivetrain.getInstance();
     launcher = Launcher.getInstance();
+    roof = Roof.getInstance();
   }
 
   @Override
@@ -63,25 +69,50 @@ private Launcher launcher;
   public void teleopPeriodic() {
 
     //drive controls
+
+    if (driver.getRawButton(Controller.PS_L1)) 
+       drivetrain.setDriveSpeed(DriveSpeed.SLOW);
+       else
+       drivetrain.setDriveSpeed(DriveSpeed.FAST);
+       
+
+  double forward = driver.getRawAxis(Controller.PS_AXIS_LEFT_Y);
+  double turn = driver.getRawAxis(Controller.PS_AXIS_LEFT_X);
+
+
+  drivetrain.drive(forward, turn);
+
+  //launcher controls
     
-    if (driver.getRawButton(Controller.PS_L1)) {
-      drivetrain.setDriveSpeed(DriveSpeed.SLOW);
-    } else {
-      drivetrain.setDriveSpeed(DriveSpeed.FAST);
-    }
 
-    double forward = driver.getRawAxis(Controller.PS_AXIS_RIGHT_Y);
-    double turn = driver.getRawAxis(Controller.PS_AXIS_LEFT_X);
+  if (operator.getRawButton(Controller.PS_CIRCLE)){
+    launcher.setFlickState(FlickerState.SHOOT);
+  } else {
+    launcher.setFlickState(FlickerState.OFF);
+  }
+  
+  if (operator.getRawButton(Controller.PS_SQUARE)){
+    launcher.setLaunchState(LauncherState.SHOOT);
+  } else if (operator.getRawButton(Controller.PS_TRIANGLE)){
+    launcher.setFlickState(FlickerState.INTAKE);
+    launcher.setLaunchState(LauncherState.INTAKE);
+  }
+  else if(operator.getRawButton(Controller.PS_CROSS)){
+    launcher.setFlickState(FlickerState.AMP);
+    launcher.setLaunchState(LauncherState.AMP);
+  }
+  else {
+    launcher.setLaunchState(LauncherState.OFF);
+  }
 
-    drivetrain.drive(forward, turn);
+  launcher.updateState();
+
+  boolean roofopen = operator.getRawButton(Controller.PS_L1);
+  boolean roofclose = operator.getRawButton(Controller.PS_R1);
+
+  roof.move(roofopen,roofclose);
 
 
-    //launcher controls
-
-    boolean launchButton = operator.getRawButton(Controller.PS_CROSS);
-    boolean intakebutton = operator.getRawButton(Controller.PS_SQUARE);
-
-    launcher.updateState(launchButton, intakebutton);
   }
 
   @Override

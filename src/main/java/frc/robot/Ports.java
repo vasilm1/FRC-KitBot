@@ -6,4 +6,6 @@ public class Ports {
     public static final int DRIVE_LEFT_1 = 3;
     public static final int DRIVE_LEFT_2 = 4;
     public static final int LAUNCHER = 5;
+    public static final int FLICKER = 7;
+    public static final int ROOF = 6;
 }
