@@ -4,21 +4,26 @@
 
 package frc.robot;
 
-import edu.wpi.first.wpilibj.SPI;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.cscore.CvSink;
+import edu.wpi.first.cscore.CvSource;
+import edu.wpi.first.cscore.UsbCamera;
+import edu.wpi.first.wpilibj.TimedRobot;
+import org.opencv.core.Mat;
+import org.opencv.core.Point;
+import org.opencv.core.Scalar;
+import org.opencv.imgproc.Imgproc;
 
 import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.XboxController;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import frc.robot.subsys.Drivetrain;
 import frc.robot.subsys.Drivetrain.DriveSpeed;
+
 import frc.robot.subsys.Launcher.FlickerState;
 import frc.robot.subsys.Launcher.LauncherState;
 import frc.robot.subsys.Launcher;
+
 import frc.robot.subsys.Roof;
 
 
@@ -38,6 +43,8 @@ private Drivetrain drivetrain;
 private Launcher launcher;
 private Roof roof;
 
+Thread m_visionThread;
+
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -47,6 +54,45 @@ private Roof roof;
     drivetrain = Drivetrain.getInstance();
     launcher = Launcher.getInstance();
     roof = Roof.getInstance();
+
+    m_visionThread =
+    new Thread(
+        () -> {
+          // Get the UsbCamera from CameraServer
+          UsbCamera camera = CameraServer.startAutomaticCapture("cam1", 0);
+
+          // Set the resolution
+          camera.setResolution(640, 480);
+
+          // Get a CvSink. This will capture Mats from the camera
+          CvSink cvSink = CameraServer.getVideo();
+          
+          // Setup a CvSource. This will send images back to the Dashboard
+          CvSource outputStream = CameraServer.putVideo("Rectangle", 640, 480);
+
+          // Mats are very memory expensive. Lets reuse this Mat.
+          Mat mat = new Mat();
+
+          // This cannot be 'true'. The program will never exit if it is. This
+          // lets the robot stop this thread when restarting robot code or
+          // deploying.
+          while (!Thread.interrupted()) {
+            // Tell the CvSink to grab a frame from the camera and put it
+            // in the source mat.  If there is an error notify the output.
+            if (cvSink.grabFrame(mat) == 0) {
+              // Send the output the error.
+              outputStream.notifyError(cvSink.getError());
+              // skip the rest of the current iteration
+              continue;
+            }
+            // Put a rectangle on the image
+               Imgproc.rectangle(mat, new Point(100, 100), new Point(400, 400), new Scalar(255, 255, 255), 2);
+            // Give the output stream a new image to display
+            outputStream.putFrame(mat);
+          }
+        });
+    m_visionThread.setDaemon(true);
+    m_visionThread.start();
   }
 
   @Override
@@ -82,16 +128,21 @@ private Roof roof;
 
   drivetrain.drive(forward, turn);
 
-  //launcher controls
-    
+//launcher controls
+                                  /*
+△ - INTAKE                       
+R1 - Speed up Launcher            
+〇 - Flick into Launcher          
+✕ - Shoot into AMP               
+                                  */
 
-  if (operator.getRawButton(Controller.PS_CIRCLE)){
+  if (operator.getRawButton(Controller.PS_R1)){
     launcher.setFlickState(FlickerState.SHOOT);
   } else {
     launcher.setFlickState(FlickerState.OFF);
   }
   
-  if (operator.getRawButton(Controller.PS_SQUARE)){
+  if (operator.getRawButton(Controller.PS_CIRCLE)){
     launcher.setLaunchState(LauncherState.SHOOT);
   } else if (operator.getRawButton(Controller.PS_TRIANGLE)){
     launcher.setFlickState(FlickerState.INTAKE);

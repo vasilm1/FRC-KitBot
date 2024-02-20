@@ -1,7 +1,6 @@
 package frc.robot.subsys;
 
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMax.IdleMode;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
@@ -22,7 +21,7 @@ public class Drivetrain {
     private static Drivetrain instance;
     
     public enum DriveSpeed {
-        SLOW(0.25),
+        SLOW(0.15),
         FAST(.5);
 
         public final double speed;

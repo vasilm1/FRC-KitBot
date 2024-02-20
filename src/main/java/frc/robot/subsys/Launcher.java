@@ -46,8 +46,7 @@
          }
      }
 
-     public Launcher()
-     {
+     public Launcher() {
          launcher = new CANSparkMax(Ports.LAUNCHER, MotorType.kBrushed);
          launcher.setInverted(false);
          launcher.setIdleMode(IdleMode.kBrake);
@@ -57,8 +56,6 @@
          flicker.setInverted(false);
          flicker.setIdleMode(IdleMode.kBrake);
          flicker.burnFlash();
-
-
      }
 
      public void setLaunchState(LauncherState state) {
@@ -68,26 +65,15 @@
     public void setFlickState(FlickerState state) {
          this.flickerState = state;
      }
+         
+    public void updateState() {
+    
 
-    //  public void updateState(boolean launchbutton, boolean intakebutton)
-         public void updateState()
-     {
-        //  if(launchbutton && !intakebutton)
-        //  {
-        //      setState(LauncherState.SHOOT);
-        //  }
-        //  if(intakebutton && !launchbutton)
-        //  {
-        //      setState(LauncherState.INTAKE);
-        //  }
+        launcher.set(launcherState.power);
+        flicker.set(flickerState.power);
 
-        //  else setState(LauncherState.OFF);
-
-         launcher.set(launcherState.power);
-         flicker.set(flickerState.power);
-
-         SmartDashboard.putNumber("LAUNCHER VOLTS", launcher.getBusVoltage());
-
+        SmartDashboard.putNumber("LAUNCHER VOLTS", launcher.getBusVoltage());
+        SmartDashboard.putNumber("FLICKER VOLTS", flicker.getBusVoltage());
      }
 
      public static Launcher getInstance() {
@@ -95,6 +81,5 @@
              instance = new Launcher();
          }
          return instance;
-
- }
+     }
  }
