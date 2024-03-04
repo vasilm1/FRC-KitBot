@@ -17,15 +17,20 @@ import org.opencv.imgproc.Imgproc;
 import edu.wpi.first.wpilibj.PS4Controller;
 import edu.wpi.first.wpilibj.TimedRobot;
 
+import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import frc.robot.subsys.Drivetrain;
 import frc.robot.subsys.Drivetrain.DriveSpeed;
 
 import frc.robot.subsys.Launcher.FlickerState;
 import frc.robot.subsys.Launcher.LauncherState;
+import frc.robot.subsys.Roof.RoofState;
 import frc.robot.subsys.Launcher;
 
 import frc.robot.subsys.Roof;
 
+import frc.robot.auton.sequences.*;
 
 
 /**
@@ -41,7 +46,14 @@ private PS4Controller operator;
 
 private Drivetrain drivetrain;
 private Launcher launcher;
-private Roof roof;
+//private Roof roof;
+
+private static final String kDefaultAuto = "BAMP";
+
+private BAMP bamp;
+
+private String m_autoSelected;
+private final SendableChooser<String> m_chooser = new SendableChooser<>();
 
 Thread m_visionThread;
 
@@ -53,7 +65,10 @@ Thread m_visionThread;
   public void robotInit() {
     drivetrain = Drivetrain.getInstance();
     launcher = Launcher.getInstance();
-    roof = Roof.getInstance();
+    //roof = Roof.getInstance();
+
+    m_chooser.setDefaultOption("BAMP", kDefaultAuto);
+    SmartDashboard.putData("AUTON SEQUENCES", m_chooser);
 
     m_visionThread =
     new Thread(
@@ -100,10 +115,25 @@ Thread m_visionThread;
   }
 
   @Override
-  public void autonomousInit() {}
+  public void autonomousInit() {
+
+    m_autoSelected = m_chooser.getSelected();
+    System.out.println("Auto selected: " + m_autoSelected);
+
+    bamp = new BAMP();
+
+    bamp.initialize();
+  }
 
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+    switch (m_autoSelected) {
+      case kDefaultAuto:
+      default:
+          bamp.execute();
+          break;
+  }
+  }
 
   @Override
   public void teleopInit() {
@@ -131,17 +161,17 @@ Thread m_visionThread;
 //launcher controls
                                   /*
 △ - INTAKE                       
-R1 - Speed up Launcher            
+□ - Speed up Launcher            
 〇 - Flick into Launcher          
-✕ - Shoot into AMP               
+✕ - Shoot into AMP
+R1 & L1 - Lower and Raise the Amp roof               
                                   */
 
-  if (operator.getRawButton(Controller.PS_R1)){
+  if (operator.getRawButton(Controller.PS_SQUARE)){
     launcher.setFlickState(FlickerState.SHOOT);
   } else {
     launcher.setFlickState(FlickerState.OFF);
   }
-  
   if (operator.getRawButton(Controller.PS_CIRCLE)){
     launcher.setLaunchState(LauncherState.SHOOT);
   } else if (operator.getRawButton(Controller.PS_TRIANGLE)){
@@ -158,11 +188,13 @@ R1 - Speed up Launcher
 
   launcher.updateState();
 
-  boolean roofopen = operator.getRawButton(Controller.PS_L1);
-  boolean roofclose = operator.getRawButton(Controller.PS_R1);
+ if (operator.getRawButton(Controller.PS_R1)) {
+  //roof.setState(RoofState.HIGH);
+} else if (operator.getRawButton(Controller.PS_L1)) {
+  //roof.setState(RoofState.LOW);
+}
 
-  roof.move(roofopen,roofclose);
-
+  //roof.update();
 
   }
 

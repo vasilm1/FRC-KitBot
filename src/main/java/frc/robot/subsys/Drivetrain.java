@@ -1,13 +1,12 @@
 package frc.robot.subsys;
 
+import com.pathplanner.lib.auto.AutoBuilder;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 
 import frc.robot.Misc;
 import frc.robot.Ports;
-
-
 
 public class Drivetrain {
     
@@ -19,7 +18,7 @@ public class Drivetrain {
     private static CANSparkMax leftBack;
 
     private static Drivetrain instance;
-    
+
     public enum DriveSpeed {
         SLOW(0.15),
         FAST(.5);
@@ -33,6 +32,7 @@ public class Drivetrain {
 
 
     public Drivetrain(){
+
     rightFront = new CANSparkMax(Ports.DRIVE_RIGHT_1, MotorType.kBrushed);
     rightFront.setInverted(true);
     rightFront.setOpenLoopRampRate(0.5);
@@ -56,11 +56,14 @@ public class Drivetrain {
     leftBack.setOpenLoopRampRate(0.5);
     leftBack.setClosedLoopRampRate(0.5);
     leftBack.burnFlash();
+
+        
+
     }
 
     public void drive(double forward, double turn) {
-        double leftSpeed = Misc.clamp((forward * DSpeed.speed) - (turn * .15), -1, 1);
-        double rightSpeed = Misc.clamp((forward * DSpeed.speed) + (turn * .15), -1, 1);
+        double leftSpeed = Misc.clamp((forward * DSpeed.speed) - (turn * .25), -1, 1);
+        double rightSpeed = Misc.clamp((forward * DSpeed.speed) + (turn * .25), -1, 1);
 
         SmartDashboard.putNumber("RIGHT SPEED", (int) (rightSpeed * 100));
         SmartDashboard.putNumber("LEFT SPEED", (int) (leftSpeed * 100));

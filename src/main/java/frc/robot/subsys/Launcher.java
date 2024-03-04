@@ -21,7 +21,7 @@
          SHOOT(-1.0),
          OFF(0.0),
          INTAKE(0.4),
-         AMP(-0.4);
+         AMP(-0.7);
          public final double power;
 
          private LauncherState(double power)
@@ -36,7 +36,7 @@
          SHOOT(-1.0),
          OFF(0.0),
          INTAKE(0.4),
-         AMP(-0.2);
+         AMP(-0.3);
 
          public final double power;
 
